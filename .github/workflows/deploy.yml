@@ -28,13 +28,9 @@ jobs:
       - name: Login to Github container registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ steps.lowercase-repository-owner.outputs.name }} --password-stdin
 
-      - name: Pull latest for caching
-        run: docker pull "ghcr.io/${{ steps.lowercase-repository-owner.outputs.name }}/${{ github.event.repository.name }}:latest"
-
       - name: Build Docker image
         run: |-
           docker build . \
-            --cache-from "ghcr.io/${{ steps.lowercase-repository-owner.outputs.name }}/${{ github.event.repository.name }}:latest" \
             --file Dockerfile \
             --tag "ghcr.io/${{ steps.lowercase-repository-owner.outputs.name }}/${{ github.event.repository.name }}:$(echo $GITHUB_SHA | head -c7)"
 
