@@ -1,0 +1,45 @@
+name: Deploy
+
+env:
+  DO_NOT_TRACK: 1
+
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+  packages: write
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+
+        # Can be omitted if you have lower case github name
+      - name: Get lowercase repository owner name
+        id: lowercase-repository-owner
+        run: echo "name=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')" >> ${GITHUB_OUTPUT}
+
+      - name: Login to Github container registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ steps.lowercase-repository-owner.outputs.name }} --password-stdin
+
+      - name: Pull latest for caching
+        run: docker pull "ghcr.io/${{ steps.lowercase-repository-owner.outputs.name }}/${{ github.event.repository.name }}:latest"
+
+      - name: Build Docker image
+        run: |-
+          docker build . \
+            --cache-from "ghcr.io/${{ steps.lowercase-repository-owner.outputs.name }}/${{ github.event.repository.name }}:latest" \
+            --file Dockerfile \
+            --tag "ghcr.io/${{ steps.lowercase-repository-owner.outputs.name }}/${{ github.event.repository.name }}:$(echo $GITHUB_SHA | head -c7)"
+
+      - name: Push ${{ github.event.repository.name }}'s latest tag
+        run: |-
+          docker tag ghcr.io/${{ steps.lowercase-repository-owner.outputs.name }}/${{ github.event.repository.name }}:$(echo $GITHUB_SHA | head -c7) "ghcr.io/${{ steps.lowercase-repository-owner.outputs.name }}/${{ github.event.repository.name }}:latest"
+          docker push ghcr.io/${{ steps.lowercase-repository-owner.outputs.name }}/${{ github.event.repository.name }}:$(echo $GITHUB_SHA | head -c7)
+          docker push ghcr.io/${{ steps.lowercase-repository-owner.outputs.name }}/${{ github.event.repository.name }}:latest
