@@ -1,0 +1,27 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-k8s-guest-lecture
+  namespace: hu
+  annotations:
+    cert-manager.io/issuer: letsencrypt-k8s-guest-lecture
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - k8s-guest-lecture.jipsterk.nl
+      secretName: letsencrypt-k8s-guest-lecture
+  rules:
+    - host: k8s-guest-lecture.jipsterk.nl
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: k8s-guest-lecture
+                port:
+                  number: 80
+---
+

@@ -1,0 +1,26 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-guest-lecture
+  namespace: hu
+spec:
+  selector:
+    matchLabels:
+      app: k8s-guest-lecture
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: k8s-guest-lecture
+    spec:
+      containers:
+        - name: k8s-guest-lecture
+          image: ghcr.io/jipsterk/k8s-guest-lecture:latest
+          ports:
+            - containerPort: 80
+      imagePullSecrets:
+        - name: ghcr-secret
+---
+
