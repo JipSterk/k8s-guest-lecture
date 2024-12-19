@@ -10,10 +10,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - k8s-guest-lecture.jipsterk.nl
+        - k8s-hu-demo.jipsterk.nl
       secretName: letsencrypt-k8s-guest-lecture
   rules:
-    - host: k8s-guest-lecture.jipsterk.nl
+    - host: k8s-hu-demo.jipsterk.nl
       http:
         paths:
           - path: /
